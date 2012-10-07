@@ -33,6 +33,11 @@ class CellularAutomaton[@specialized(Double, Int) T, N <: Neighbourhood[T]](
     borderIndices.append((i, j))
   }
 
+  lazy val coreIndices = for (
+    i <- border until size + border;
+    j <- border until size + border
+  ) yield (i, j)
+
   def makeStep = {
     val backArray = getBackArray
     val workArray = getWorkArray
@@ -44,11 +49,14 @@ class CellularAutomaton[@specialized(Double, Int) T, N <: Neighbourhood[T]](
 
     // Update core region
     // var t = System.nanoTime
-    (border until size + border).par.foreach { i =>
-      (border until size + border).par.foreach { j =>
-        workArray(i)(j) = rule(neighbourhoodFactory(i, j, backArray))
-      }
+    coreIndices.par.foreach { t =>
+      val i = t._1
+      val j = t._2
+      workArray(i)(j) = rule(neighbourhoodFactory(i, j, backArray))
     }
+    // for (i <- border until size + border; j <- border until size + border) {
+    //   workArray(i)(j) = rule(neighbourhoodFactory(i, j, backArray))
+    // }
     // println(System.nanoTime - t)
 
     stepCounter += 1
