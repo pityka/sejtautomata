@@ -44,8 +44,10 @@ class CellularAutomaton[@specialized(Double, Int) T, N <: Neighbourhood[T]](
 
     // Update core region
     // var t = System.nanoTime
-    for (i <- border until size + border; j <- border until size + border) {
-      workArray(i)(j) = rule(neighbourhoodFactory(i, j, backArray))
+    (border until size + border).par.foreach { i =>
+      (border until size + border).par.foreach { j =>
+        workArray(i)(j) = rule(neighbourhoodFactory(i, j, backArray))
+      }
     }
     // println(System.nanoTime - t)
 

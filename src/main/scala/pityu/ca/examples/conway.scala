@@ -51,7 +51,7 @@ object RunConway {
     size,
     border
   )
-  val window = new Window(size + 2 * border)
+  // val window = new Window(size + 2 * border)
   (0 until 1000) foreach { x =>
 
     // println(Helpers.print(ca.state))
@@ -59,14 +59,14 @@ object RunConway {
 
     ca.makeStep
 
-    if (ca.step % 100 == 0) {
-      val mat: Array[Array[Int]] = ca.state.map { ar =>
-        ar.map { v =>
-          convertRGBToInt(255 * v, 255 * v, 255 * v, 255)
-        }
-      }
-      window.setImage(mat)
-    }
+    // if (ca.step % 100 == 0) {
+    //   val mat: Array[Array[Int]] = ca.state.map { ar =>
+    //     ar.map { v =>
+    //       convertRGBToInt(255 * v, 255 * v, 255 * v, 255)
+    //     }
+    //   }
+    //   window.setImage(mat)
+    // }
 
   }
 }
