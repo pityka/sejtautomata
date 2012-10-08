@@ -45,6 +45,7 @@ object RunConway extends App {
   val size = args(0).toInt
   val border = 4
   val threads = args(1).toInt
+  val refresh = args(2).toInt
   val ca = new CellularAutomaton[Int, MooreNeighbourhood[Int]](
     Conway.rule,
     Moore.factory,
@@ -62,7 +63,7 @@ object RunConway extends App {
 
     ca.makeStep
 
-    if (ca.step % 1 == 0) {
+    if (ca.step % refresh == 0) {
       val mat: Array[Array[Int]] = ca.state.map { ar =>
         ar.map { v =>
           convertRGBToInt(255 * v, 255 * v, 255 * v, 255)
