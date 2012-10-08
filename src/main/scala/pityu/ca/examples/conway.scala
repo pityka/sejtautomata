@@ -40,18 +40,21 @@ object Conway {
   }
 }
 
-object RunConway {
-  val size = 1000
-  val border = 5
+object RunConway extends App {
+  val t = System.nanoTime
+  val size = args(0).toInt
+  val border = 4
+  val threads = args(1).toInt
   val ca = new CellularAutomaton[Int, MooreNeighbourhood[Int]](
     Conway.rule,
     Moore.factory,
     Borders.uniform(0),
     Conway.init,
     size,
-    border
+    border,
+    threads
   )
-  // val window = new Window(size + 2 * border)
+  val window = new Window(size + 2 * border)
   (0 until 1000) foreach { x =>
 
     // println(Helpers.print(ca.state))
@@ -59,14 +62,17 @@ object RunConway {
 
     ca.makeStep
 
-    // if (ca.step % 100 == 0) {
-    //   val mat: Array[Array[Int]] = ca.state.map { ar =>
-    //     ar.map { v =>
-    //       convertRGBToInt(255 * v, 255 * v, 255 * v, 255)
-    //     }
-    //   }
-    //   window.setImage(mat)
-    // }
+    if (ca.step % 1 == 0) {
+      val mat: Array[Array[Int]] = ca.state.map { ar =>
+        ar.map { v =>
+          convertRGBToInt(255 * v, 255 * v, 255 * v, 255)
+        }
+      }
+      window.setImage(mat)
+    }
 
   }
+
+  window.close
+  println(((System.nanoTime - t) / 1000000000.0).toString + " seconds")
 }
