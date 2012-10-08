@@ -8,7 +8,8 @@ class CellularAutomaton[@specialized(Double, Int) T, N <: Neighbourhood[T]](
     getBorder: (Int, Int, Int, Int, Array[Array[T]]) => T,
     init: (Int, Int) => T,
     size: Int,
-    border: Int)(implicit cm: ClassManifest[T]) {
+    border: Int,
+    threads: Int)(implicit cm: ClassManifest[T]) {
 
   private val mat1: Array[Array[T]] = Array.tabulate(size + (2 * border), size + (2 * border))(init)
 
@@ -33,6 +34,11 @@ class CellularAutomaton[@specialized(Double, Int) T, N <: Neighbourhood[T]](
     borderIndices.append((i, j))
   }
 
+  lazy val coreIndices = for (
+    i <- border until size + border;
+    j <- border until size + border
+  ) yield (i, j)
+
   def makeStep = {
     val backArray = getBackArray
     val workArray = getWorkArray
@@ -44,9 +50,33 @@ class CellularAutomaton[@specialized(Double, Int) T, N <: Neighbourhood[T]](
 
     // Update core region
     // var t = System.nanoTime
-    for (i <- border until size + border; j <- border until size + border) {
+    val old = collection.parallel.ForkJoinTasks.defaultForkJoinPool.getParallelism
+    collection.parallel.ForkJoinTasks.defaultForkJoinPool.setParallelism(threads)
+
+    coreIndices.par.foreach { t =>
+      val i = t._1
+      val j = t._2
       workArray(i)(j) = rule(neighbourhoodFactory(i, j, backArray))
     }
+
+    collection.parallel.ForkJoinTasks.defaultForkJoinPool.setParallelism(old)
+
+    // (1 until threads).par.foreach { z =>
+    //   var i = border + (size + border) / threads * (z - 1)
+    //   var j = border
+    //   while (i <= (size + border) / threads * z) {
+    //     j = border
+    //     while (j <= size + border) {
+    //       workArray(i)(j) = rule(neighbourhoodFactory(i, j, backArray))
+    //       j += 1
+    //     }
+    //     i += 1
+    //   }
+    // }
+
+    // for (i <- border until size + border; j <- border until size + border) {
+    //   workArray(i)(j) = rule(neighbourhoodFactory(i, j, backArray))
+    // }
     // println(System.nanoTime - t)
 
     stepCounter += 1

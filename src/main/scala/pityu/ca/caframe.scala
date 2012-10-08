@@ -30,5 +30,11 @@ class Window(size: Int) {
     }
     picLabel.setIcon(new ImageIcon(image))
   }
+
+  def close {
+    frame.setVisible(false)
+    picLabel.setVisible(false)
+    frame.dispose
+  }
 }
 
