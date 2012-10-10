@@ -46,6 +46,7 @@ object RunConway extends App {
   val border = 4
   val threads = args(1).toInt
   val refresh = args(2).toInt
+  val maxSteps = args(3).toInt
   val ca = new CellularAutomaton[Int, MooreNeighbourhood[Int]](
     Conway.rule,
     Moore.factory,
@@ -56,7 +57,7 @@ object RunConway extends App {
     threads
   )
   val window = new Window(size + 2 * border)
-  (0 until 1000) foreach { x =>
+  (0 until maxSteps) foreach { x =>
 
     // println(Helpers.print(ca.state))
     // println("-")
