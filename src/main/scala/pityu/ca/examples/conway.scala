@@ -15,6 +15,7 @@ object Helpers {
 }
 
 object Conway {
+  val rnd = scala.util.Random
   val rule: (MooreNeighbourhood[Int] => Int) = { n: MooreNeighbourhood[Int] =>
     val s = n.sum(_ + _)
     if (n.c == 1) {
@@ -30,7 +31,7 @@ object Conway {
       }
     }
   }
-  val init: (Int, Int) => Int = (x: Int, y: Int) => (x, y) match {
+  val glider1: (Int, Int) => Int = (x: Int, y: Int) => (x, y) match {
     case (15, 15) => 1
     case (16, 16) => 1
     case (16, 17) => 1
@@ -38,25 +39,30 @@ object Conway {
     case (14, 17) => 1
     case _ => 0
   }
+  val random: (Int, Int) => Int = (x, y) => rnd.nextInt(2)
 }
 
 object RunConway extends App {
-  val t = System.nanoTime
   val size = args(0).toInt
   val border = 4
   val threads = args(1).toInt
   val refresh = args(2).toInt
   val maxSteps = args(3).toInt
+
+  collection.parallel.ForkJoinTasks.defaultForkJoinPool.setParallelism(threads)
+
   val ca = new CellularAutomaton[Int, MooreNeighbourhood[Int]](
     Conway.rule,
     Moore.factory,
     Borders.uniform(0),
-    Conway.init,
+    Conway.random,
     size,
-    border,
-    threads
+    border
   )
   val window = new Window(size + 2 * border)
+
+  val t = System.nanoTime
+
   (0 until maxSteps) foreach { x =>
 
     // println(Helpers.print(ca.state))
@@ -65,16 +71,18 @@ object RunConway extends App {
     ca.makeStep
 
     if (ca.step % refresh == 0) {
-      val mat: Array[Array[Int]] = ca.state.map { ar =>
+      val mat: Array[Array[Int]] = (ca.state.par.map { ar =>
         ar.map { v =>
-          convertRGBToInt(255 * v, 255 * v, 255 * v, 255)
+          //convertRGBToInt(255 * v, 255 * v, 255 * v, 255)
+          if (v == 0) 0 else 16777215
         }
-      }
+      }).seq.toArray
       window.setImage(mat)
     }
 
   }
 
-  window.close
   println(((System.nanoTime - t) / 1000000000.0).toString + " seconds")
+  window.close
+
 }
