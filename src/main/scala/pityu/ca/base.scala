@@ -34,10 +34,10 @@ class CellularAutomaton[@specialized(Double, Int) T, N <: Neighbourhood[T]](
     borderIndices.append((i, j))
   }
 
-  lazy val coreIndices = for (
-    i <- border until size + border;
-    j <- border until size + border
-  ) yield (i, j)
+  lazy val coreIndices = (for (
+      i <- border until size + border;
+      j <- border until size + border
+    ) yield (i, j)).par
 
   def makeStep = {
     val backArray = getBackArray
@@ -53,7 +53,7 @@ class CellularAutomaton[@specialized(Double, Int) T, N <: Neighbourhood[T]](
     val old = collection.parallel.ForkJoinTasks.defaultForkJoinPool.getParallelism
     collection.parallel.ForkJoinTasks.defaultForkJoinPool.setParallelism(threads)
 
-    coreIndices.par.foreach { t =>
+    coreIndices.foreach { t =>
       val i = t._1
       val j = t._2
       workArray(i)(j) = rule(neighbourhoodFactory(i, j, backArray))
